@@ -1,0 +1,47 @@
+{
+  "name": "zinc",
+  "version": "1.0.0",
+  "type": "commonjs",
+  "description": "",
+  "main": "src/index.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.ts\"",
+    "prepare": "husky"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KilgoreTroute07/zinc.git"
+  },
+  "author": "Ian Cole",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/KilgoreTroute07/zinc/issues"
+  },
+  "homepage": "https://github.com/KilgoreTroute07/zinc#readme",
+  "dependencies": {
+    "@inquirer/prompts": "^8.2.0",
+    "commander": "^14.0.3",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.28.0",
+    "@stylistic/eslint-plugin": "^5.8.0",
+    "@types/node": "^25.2.3",
+    "@typescript-eslint/eslint-plugin": "^8.34.0",
+    "@typescript-eslint/parser": "^8.34.0",
+    "eslint": "^9.28.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
+    "prettier": "^3.8.1",
+    "tsc-alias": "^1.8.16",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18"
+  }
+}
