@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, expect, expectTypeOf, test } from 'vitest';
 import { OptionNameMismatchError } from '../../../errors';
 import { $BrandSymbol } from '../../zinc-option';
@@ -10,7 +9,6 @@ describe('Boolean Options', () => {
       BooleanCliOption({
         name: 'dryRun',
         flags: '-d, --dry-run',
-        type: 'boolean',
         description:
           'Dry run the command, preview any changes that would be made',
         default: true,
@@ -23,7 +21,6 @@ describe('Boolean Options', () => {
       BooleanCliOption({
         name: 'dryRun',
         flags: '-d, --dry-run',
-        type: 'boolean',
         description:
           'Dry run the command, preview any changes that would be made',
         default: true,
@@ -36,7 +33,6 @@ describe('Boolean Options', () => {
       BooleanCliOption({
         name: 'dryRun',
         flags: '-d, --dry-run',
-        type: 'boolean',
         description: 'Dry run',
         silent: true,
       });
@@ -48,7 +44,6 @@ describe('Boolean Options', () => {
       const option = BooleanCliOption({
         name: 'dryRun',
         flags: '-d, --dry-run',
-        type: 'boolean',
         description:
           'Dry run the command, preview any changes that would be made',
         default: true,
@@ -63,7 +58,6 @@ describe('Boolean Options', () => {
         BooleanCliOption({
           name: 'foo',
           flags: '-d, --dry-run',
-          type: 'boolean',
           description:
             'Dry run the command, preview any changes that would be made',
           default: true,
@@ -74,7 +68,6 @@ describe('Boolean Options', () => {
         BooleanCliOption({
           name: 'dryRun',
           flags: '--dry-run-foo',
-          type: 'boolean',
           description:
             'Dry run the command, preview any changes that would be made',
           default: true,
@@ -86,7 +79,6 @@ describe('Boolean Options', () => {
       const option = BooleanCliOption({
         name: 'dryRun',
         flags: '-d, --dry-run',
-        type: 'boolean',
         description:
           'Dry run the command, preview any changes that would be made',
         default: true,
@@ -100,7 +92,6 @@ describe('Boolean Options', () => {
       const option = BooleanCliOption({
         name: 'dryRun',
         flags: '-d, --dry-run',
-        type: 'boolean',
         description:
           'Dry run the command, preview any changes that would be made',
         default: true,
@@ -114,7 +105,6 @@ describe('Boolean Options', () => {
       const option = BooleanCliOption({
         name: 'dryRun',
         flags: '-d, --dry-run',
-        type: 'boolean',
         description:
           'Dry run the command, preview any changes that would be made',
         default: true,
@@ -126,7 +116,6 @@ describe('Boolean Options', () => {
       const option = BooleanCliOption({
         name: 'dryRun',
         flags: '-d, --dry-run',
-        type: 'boolean',
         description:
           'Dry run the command, preview any changes that would be made',
         default: true,
@@ -144,7 +133,6 @@ describe('Boolean Options', () => {
       const option = BooleanCliOption({
         name: 'dryRun',
         flags: '-d, --dry-run',
-        type: 'boolean',
         description: 'Dry run',
       });
       expect(option.schema.parse(undefined)).toBe(false);
@@ -154,7 +142,6 @@ describe('Boolean Options', () => {
       const option = BooleanCliOption({
         name: 'dryRun',
         flags: '-d, --dry-run',
-        type: 'boolean',
         description: 'Dry run',
       });
       expect(option.schema.parse('')).toBe(false);
@@ -167,7 +154,6 @@ describe('Boolean Options', () => {
         const option = BooleanCliOption({
           name: 'dryRun',
           flags: '-d, --dry-run',
-          type: 'boolean',
           description:
             'Dry run the command, preview any changes that would be made',
           default: true,
@@ -182,7 +168,6 @@ describe('Boolean Options', () => {
       const option = BooleanCliOption({
         name: 'dryRun',
         flags: '-d, --dry-run',
-        type: 'boolean',
         description:
           'Dry run the command, preview any changes that would be made',
         default: true,
@@ -195,7 +180,6 @@ describe('Boolean Options', () => {
       const option = BooleanCliOption({
         name: 'dryRun',
         flags: '-d, --dry-run',
-        type: 'boolean',
         description:
           'Dry run the command, preview any changes that would be made',
         default: true,
@@ -210,7 +194,6 @@ describe('Boolean Options', () => {
       const option = BooleanCliOption({
         name: 'dryRun',
         flags: '-d, --dry-run',
-        type: 'boolean',
         description: 'Dry run',
       });
       const WithDefault = option.default(true);
@@ -222,7 +205,6 @@ describe('Boolean Options', () => {
       const option = BooleanCliOption({
         name: 'dryRun',
         flags: '-d, --dry-run',
-        type: 'boolean',
         description: 'Dry run',
       });
       const WithDefault = option.default(true);

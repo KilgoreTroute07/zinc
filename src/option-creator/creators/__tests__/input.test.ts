@@ -1,9 +1,8 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, expect, expectTypeOf, test } from 'vitest';
 import { z } from 'zod';
 import { OptionNameMismatchError } from '../../../errors';
-import { InputCliOption } from '../input';
 import { $BrandSymbol } from '../../zinc-option';
+import { InputCliOption } from '../input';
 
 describe('Input Options', () => {
   describe('type checking', () => {
@@ -13,7 +12,6 @@ describe('Input Options', () => {
       const inputArgsWithOptionalSchema = {
         name: 'test',
         flags: '--test <test>',
-        type: 'input',
         description: 'Test',
         schema: optionalStringSchema,
       } as const;
@@ -33,7 +31,6 @@ describe('Input Options', () => {
       InputCliOption({
         name: 'employerId',
         flags: '--employer-id <employerId>',
-        type: 'input',
         description: 'Employer ID',
         schema: z.coerce.number(),
         optional: true,
@@ -45,7 +42,6 @@ describe('Input Options', () => {
       InputCliOption({
         name: 'employerId',
         flags: '--employer-id <employerId>',
-        type: 'input',
         description: 'Employer ID',
         schema: z.coerce.number(),
         default: 42,
@@ -57,7 +53,6 @@ describe('Input Options', () => {
       InputCliOption({
         name: 'employerId',
         flags: '--employer-id <employerId>',
-        type: 'input',
         description: 'Employer ID',
         schema: z.coerce.number(),
         default: 42,
@@ -69,7 +64,6 @@ describe('Input Options', () => {
       InputCliOption({
         name: 'employerId',
         flags: '--employer-id <employerId>',
-        type: 'input',
         description: 'Employer ID',
         schema: z.coerce.number(),
         optional: true,
@@ -82,7 +76,6 @@ describe('Input Options', () => {
       InputCliOption({
         name: 'employerId',
         flags: '--employer-id <employerId>',
-        type: 'input',
         description: 'Employer ID',
         schema: z.coerce.number(),
         optional: false,
@@ -95,7 +88,6 @@ describe('Input Options', () => {
       InputCliOption({
         name: 'employerId',
         flags: '--employer-id <employerId>',
-        type: 'input',
         description: 'Employer ID',
         schema: z.coerce.number(),
         silent: true,
@@ -108,7 +100,6 @@ describe('Input Options', () => {
       const option = InputCliOption({
         name: 'employerId',
         flags: '--employer-id <employerId>',
-        type: 'input',
         description: 'Employer ID',
         schema: z.coerce.number(),
       });
@@ -122,7 +113,6 @@ describe('Input Options', () => {
         InputCliOption({
           name: 'foo',
           flags: '--employer-id <employerId>',
-          type: 'input',
           description: 'Employer ID',
           schema: z.coerce.number(),
         });
@@ -132,7 +122,6 @@ describe('Input Options', () => {
         InputCliOption({
           name: 'employerId',
           flags: '--employer-id-foo <employerIdFoo>',
-          type: 'input',
           description: 'Employer ID',
           schema: z.coerce.number(),
         });
@@ -143,7 +132,6 @@ describe('Input Options', () => {
       const firstOption = InputCliOption({
         name: 'employerId',
         flags: '--employer-id <employerId>',
-        type: 'input',
         description: 'Employer ID',
         schema: z.coerce.number(),
       });
@@ -154,7 +142,6 @@ describe('Input Options', () => {
       const secondOption = InputCliOption({
         name: 'employerId',
         flags: '--employer-id <employerId>',
-        type: 'input',
         description: 'Employer ID',
         schema: z.stringbool(),
       });
@@ -167,7 +154,6 @@ describe('Input Options', () => {
       const option = InputCliOption({
         name: 'employerId',
         flags: '--employer-id <employerId>',
-        type: 'input',
         description: 'Employer ID',
         schema: z.coerce.number(),
         default: 42,
@@ -179,7 +165,6 @@ describe('Input Options', () => {
       const option = InputCliOption({
         name: 'employerId',
         flags: '--employer-id <employerId>',
-        type: 'input',
         description: 'Employer ID',
         schema: z.coerce.number(),
       });
@@ -193,7 +178,6 @@ describe('Input Options', () => {
       const option = InputCliOption({
         name: 'employerId',
         flags: '--employer-id <employerId>',
-        type: 'input',
         description: 'Employer ID',
         schema: z.coerce.number(),
         optional: true,
@@ -205,7 +189,6 @@ describe('Input Options', () => {
       const option = InputCliOption({
         name: 'employerId',
         flags: '--employer-id <employerId>',
-        type: 'input',
         description: 'Employer ID',
         schema: z.coerce.number(),
         optional: false,
@@ -217,7 +200,6 @@ describe('Input Options', () => {
       const option = InputCliOption({
         name: 'employerId',
         flags: '--employer-id <employerId>',
-        type: 'input',
         description: 'Employer ID',
         schema: z.coerce.number(),
       });
@@ -228,7 +210,6 @@ describe('Input Options', () => {
       const option = InputCliOption({
         name: 'employerId',
         flags: '--employer-id <employerId>',
-        type: 'input',
         description: 'Employer ID',
         schema: z.string(),
         optional: true,
@@ -240,7 +221,6 @@ describe('Input Options', () => {
       const option = InputCliOption({
         name: 'employerId',
         flags: '--employer-id <employerId>',
-        type: 'input',
         description: 'Employer ID',
         schema: z.string(),
         optional: false,
@@ -252,7 +232,6 @@ describe('Input Options', () => {
       const option = InputCliOption({
         name: 'employerId',
         flags: '--employer-id <employerId>',
-        type: 'input',
         description: 'Employer ID',
         schema: z.string(),
       });
@@ -266,7 +245,6 @@ describe('Input Options', () => {
         const option = InputCliOption({
           name: 'employerId',
           flags: '--employer-id <employerId>',
-          type: 'input',
           description: 'Employer ID',
           schema: z.coerce.number(),
         });
@@ -278,7 +256,6 @@ describe('Input Options', () => {
         const option = InputCliOption({
           name: 'employerId',
           flags: '--employer-id <employerId>',
-          type: 'input',
           description: 'Employer ID',
           schema: z.coerce.number(),
           default: 42,
@@ -290,7 +267,6 @@ describe('Input Options', () => {
         const option = InputCliOption({
           name: 'employerId',
           flags: '--employer-id <employerId>',
-          type: 'input',
           description: 'Employer ID',
           schema: z.string(),
           default: 'fallback',
@@ -302,7 +278,6 @@ describe('Input Options', () => {
         const option = InputCliOption({
           name: 'employerId',
           flags: '--employer-id <employerId>',
-          type: 'input',
           description: 'Employer ID',
           schema: z.coerce.number(),
         });
@@ -313,7 +288,6 @@ describe('Input Options', () => {
         const option = InputCliOption({
           name: 'employerId',
           flags: '--employer-id <employerId>',
-          type: 'input',
           description: 'Employer ID',
           schema: z.string(),
         });
@@ -327,7 +301,6 @@ describe('Input Options', () => {
         const option = InputCliOption({
           name: 'employerId',
           flags: '--employer-id <employerId>',
-          type: 'input',
           description: 'Employer ID',
           schema: z.coerce.number(),
           default: 42,
@@ -340,7 +313,6 @@ describe('Input Options', () => {
         const option = InputCliOption({
           name: 'employerId',
           flags: '--employer-id <employerId>',
-          type: 'input',
           description: 'Employer ID',
           schema: z.coerce.number(),
           default: 42,
@@ -356,7 +328,6 @@ describe('Input Options', () => {
         const option = InputCliOption({
           name: 'employerId',
           flags: '--employer-id <employerId>',
-          type: 'input',
           description: 'Employer ID',
           schema: z.coerce.number(),
         });
@@ -369,7 +340,6 @@ describe('Input Options', () => {
         const option = InputCliOption({
           name: 'employerId',
           flags: '--employer-id <employerId>',
-          type: 'input',
           description: 'Employer ID',
           schema: z.coerce.number(),
         });

@@ -1,9 +1,8 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, expect, expectTypeOf, test } from 'vitest';
 import { z } from 'zod';
 import { OptionNameMismatchError } from '../../../errors';
-import { SelectCliOption } from '../select';
 import { $BrandSymbol } from '../../zinc-option';
+import { SelectCliOption } from '../select';
 
 describe('Select Options', () => {
   describe('type checking', () => {
@@ -13,7 +12,6 @@ describe('Select Options', () => {
       const selectArgsWithOptionalSchema = {
         name: 'env',
         flags: '--env [env]',
-        type: 'select',
         description: 'Environment',
         schema: optionalStringSchema,
         default: 'stage',
@@ -32,7 +30,6 @@ describe('Select Options', () => {
       SelectCliOption({
         name: 'env',
         flags: '-e, --env [environment]',
-        type: 'select',
         description: 'Environment (prod or stage)',
         schema: z
           .string()
@@ -53,7 +50,6 @@ describe('Select Options', () => {
       SelectCliOption({
         name: 'env',
         flags: '-e, --env [environment]',
-        type: 'select',
         description: 'Environment (prod or stage)',
         schema: z
           .string()
@@ -73,7 +69,6 @@ describe('Select Options', () => {
       SelectCliOption({
         name: 'env',
         flags: '-e, --env [environment]',
-        type: 'select',
         description: 'Environment (prod or stage)',
         schema: z
           .string()
@@ -93,7 +88,6 @@ describe('Select Options', () => {
       SelectCliOption({
         name: 'env',
         flags: '-e, --env [environment]',
-        type: 'select',
         description: 'Environment (prod or stage)',
         schema: z
           .string()
@@ -114,7 +108,6 @@ describe('Select Options', () => {
       SelectCliOption({
         name: 'env',
         flags: '-e, --env [environment]',
-        type: 'select',
         description: 'Environment (prod or stage)',
         schema: z
           .string()
@@ -135,7 +128,6 @@ describe('Select Options', () => {
       SelectCliOption({
         name: 'env',
         flags: '-e, --env [environment]',
-        type: 'select',
         description: 'Environment (prod or stage)',
         schema: z
           .string()
@@ -157,7 +149,6 @@ describe('Select Options', () => {
       const option = SelectCliOption({
         name: 'env',
         flags: '-e, --env [environment]',
-        type: 'select',
         description: 'Environment (prod or stage)',
         schema: z
           .string()
@@ -180,7 +171,6 @@ describe('Select Options', () => {
         SelectCliOption({
           name: 'foo',
           flags: '-e, --env [environment]',
-          type: 'select',
           description: 'Environment (prod or stage)',
           schema: z
             .string()
@@ -199,7 +189,6 @@ describe('Select Options', () => {
         SelectCliOption({
           name: 'env',
           flags: '--env-foo [environmentFoo]',
-          type: 'select',
           description: 'Environment (prod or stage)',
           schema: z
             .string()
@@ -219,7 +208,6 @@ describe('Select Options', () => {
       const option = SelectCliOption({
         name: 'env',
         flags: '-e, --env [environment]',
-        type: 'select',
         description: 'Environment (prod or stage)',
         schema: z
           .string()
@@ -242,7 +230,6 @@ describe('Select Options', () => {
       const option = SelectCliOption({
         name: 'env',
         flags: '-e, --env [environment]',
-        type: 'select',
         description: 'Environment (prod or stage)',
         schema: z
           .string()
@@ -262,7 +249,6 @@ describe('Select Options', () => {
       const option = SelectCliOption({
         name: 'env',
         flags: '-e, --env [environment]',
-        type: 'select',
         description: 'Environment (prod or stage)',
         schema: z
           .string()
@@ -286,7 +272,6 @@ describe('Select Options', () => {
       const option = SelectCliOption({
         name: 'env',
         flags: '-e, --env [environment]',
-        type: 'select',
         description: 'Environment (prod or stage)',
         schema: z
           .string()
@@ -307,7 +292,6 @@ describe('Select Options', () => {
       const option = SelectCliOption({
         name: 'env',
         flags: '-e, --env [environment]',
-        type: 'select',
         description: 'Environment (prod or stage)',
         schema: z
           .string()
@@ -327,7 +311,6 @@ describe('Select Options', () => {
       const option = SelectCliOption({
         name: 'env',
         flags: '-e, --env [environment]',
-        type: 'select',
         description: 'Environment (prod or stage)',
         schema: z
           .string()
@@ -346,7 +329,6 @@ describe('Select Options', () => {
       const option = SelectCliOption({
         name: 'env',
         flags: '-e, --env [environment]',
-        type: 'select',
         description: 'Environment (prod or stage)',
         schema: z
           .string()
@@ -367,7 +349,6 @@ describe('Select Options', () => {
       const option = SelectCliOption({
         name: 'env',
         flags: '-e, --env [environment]',
-        type: 'select',
         description: 'Environment (prod or stage)',
         schema: z
           .string()
@@ -388,7 +369,6 @@ describe('Select Options', () => {
       const option = SelectCliOption({
         name: 'env',
         flags: '-e, --env [environment]',
-        type: 'select',
         description: 'Environment (prod or stage)',
         schema: z
           .string()
@@ -411,7 +391,6 @@ describe('Select Options', () => {
         const option = SelectCliOption({
           name: 'env',
           flags: '-e, --env [environment]',
-          type: 'select',
           description: 'Environment (prod or stage)',
           schema: z
             .string()
@@ -432,7 +411,6 @@ describe('Select Options', () => {
         const option = SelectCliOption({
           name: 'env',
           flags: '-e, --env [environment]',
-          type: 'select',
           description: 'Environment (prod or stage)',
           schema: z
             .string()
@@ -452,7 +430,6 @@ describe('Select Options', () => {
         const option = SelectCliOption({
           name: 'env',
           flags: '-e, --env [environment]',
-          type: 'select',
           description: 'Environment (prod or stage)',
           schema: z.string().pipe(z.enum(['prod', 'stage'])),
           default: 'stage',
@@ -469,7 +446,6 @@ describe('Select Options', () => {
         const option = SelectCliOption({
           name: 'env',
           flags: '-e, --env [environment]',
-          type: 'select',
           description: 'Environment (prod or stage)',
           schema: z
             .string()
@@ -488,7 +464,6 @@ describe('Select Options', () => {
         const option = SelectCliOption({
           name: 'env',
           flags: '-e, --env [environment]',
-          type: 'select',
           description: 'Environment (prod or stage)',
           schema: z.string().pipe(z.enum(['prod', 'stage'])),
           inquiry: 'Select the environment to use',
@@ -507,7 +482,6 @@ describe('Select Options', () => {
         const option = SelectCliOption({
           name: 'env',
           flags: '-e, --env [environment]',
-          type: 'select',
           description: 'Environment (prod or stage)',
           schema: z
             .string()
@@ -528,7 +502,6 @@ describe('Select Options', () => {
         const option = SelectCliOption({
           name: 'env',
           flags: '-e, --env [environment]',
-          type: 'select',
           description: 'Environment (prod or stage)',
           schema: z
             .string()
@@ -552,7 +525,6 @@ describe('Select Options', () => {
         const option = SelectCliOption({
           name: 'env',
           flags: '-e, --env [environment]',
-          type: 'select',
           description: 'Environment (prod or stage)',
           schema: z
             .string()
@@ -573,7 +545,6 @@ describe('Select Options', () => {
         const option = SelectCliOption({
           name: 'env',
           flags: '-e, --env [environment]',
-          type: 'select',
           description: 'Environment (prod or stage)',
           schema: z
             .string()

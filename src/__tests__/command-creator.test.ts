@@ -22,7 +22,6 @@ const envChoices = [
 const EnvOption = ZincOptionCreators.select({
   name: 'env',
   flags: '-e, --env [env]',
-  type: 'select',
   description: 'Environment',
   schema: z.enum(['prod', 'stage']),
   choices: [...envChoices],
@@ -31,7 +30,6 @@ const EnvOption = ZincOptionCreators.select({
 const DryRunOption = ZincOptionCreators.boolean({
   name: 'dryRun',
   flags: '-d, --dry-run',
-  type: 'boolean',
   description: 'Dry run',
   default: false,
 });
@@ -39,7 +37,6 @@ const DryRunOption = ZincOptionCreators.boolean({
 const CountOption = ZincOptionCreators.input({
   name: 'count',
   flags: '-c, --count <count>',
-  type: 'input',
   description: 'Count',
   schema: z.coerce.number(),
 });
@@ -52,288 +49,44 @@ describe('createCommand', () => {
     vi.mocked(select).mockClear();
   });
 
-  test('parses CLI options and uses inquirer for missing options, then calls action with parsed options', async () => {
-    expect.hasAssertions();
+  describe('Type Checking', () => {
+    test('accurately infers the parsed options that are passed to the given action function', async () => {
+      const testCommand = createCommand({
+        name: 'test-command',
+        description: 'Test command',
+        options: [EnvOption, DryRunOption],
+        action: (parsedOptions) => {
+          expectTypeOf(parsedOptions).toEqualTypeOf<{
+            env: 'prod' | 'stage';
+            dryRun: boolean;
+          }>();
+        },
+      });
 
-    const action = vi.fn().mockResolvedValue(undefined);
+      const parentCommand = new Command()
+        .name('parent-command')
+        .addCommand(testCommand);
 
-    const testCommand = createCommand({
-      name: 'test-command',
-      description: 'Test command',
-      options: [EnvOption, DryRunOption],
-      action,
-    });
-
-    const parentCommand = new Command()
-      .name('parent-command')
-      .addCommand(testCommand);
-
-    // Pass --env on CLI; omit --dry-run so inquirer (confirm) is used for dryRun.
-    await parentCommand.parseAsync([
-      'node',
-      'script.js',
-      'test-command',
-      '--env',
-      'prod',
-    ]);
-
-    expect(action).toHaveBeenCalledTimes(1);
-    expect(action).toHaveBeenCalledWith({
-      env: 'prod',
-      dryRun: true, // from mocked confirm()
-    });
-  });
-
-  test('calls action with only CLI-provided values when all options are passed on the command line', async () => {
-    expect.hasAssertions();
-
-    const action = vi.fn().mockResolvedValue(undefined);
-
-    const testCommand = createCommand({
-      name: 'test-command',
-      description: 'Test command',
-      options: [EnvOption, DryRunOption],
-      action,
-    });
-
-    const parentCommand = new Command()
-      .name('parent-command')
-      .addCommand(testCommand);
-
-    await parentCommand.parseAsync([
-      'node',
-      'script.js',
-      'test-command',
-      '--env',
-      'stage',
-      '--dry-run',
-    ]);
-
-    expect(action).toHaveBeenCalledTimes(1);
-    expect(action).toHaveBeenCalledWith({
-      env: 'stage',
-      dryRun: true,
-    });
-
-    const { input, confirm, select } = await import('@inquirer/prompts');
-    expect(input).not.toHaveBeenCalled();
-    expect(confirm).not.toHaveBeenCalled();
-    expect(select).not.toHaveBeenCalled();
-  });
-
-  test('calls inquirer for every option when no options are passed on the command line', async () => {
-    expect.hasAssertions();
-
-    // select() is already mocked to resolve to 'stage' in beforeEach
-    const action = vi.fn().mockResolvedValue(undefined);
-
-    const testCommand = createCommand({
-      name: 'test-command',
-      description: 'Test command',
-      options: [EnvOption, DryRunOption],
-      action,
-    });
-
-    const parentCommand = new Command()
-      .name('parent-command')
-      .addCommand(testCommand);
-
-    await parentCommand.parseAsync(['node', 'script.js', 'test-command']);
-
-    expect(action).toHaveBeenCalledTimes(1);
-    expect(action).toHaveBeenCalledWith({
-      env: 'stage', // from mocked select()
-      dryRun: true, // from mocked confirm()
-    });
-  });
-
-  test('parses and coerces option values according to each option schema (e.g. number, boolean)', async () => {
-    expect.hasAssertions();
-
-    const action = vi.fn().mockResolvedValue(undefined);
-
-    const testCommand = createCommand({
-      name: 'test-command',
-      description: 'Test command',
-      options: [CountOption, DryRunOption],
-      action,
-    });
-
-    const parentCommand = new Command()
-      .name('parent-command')
-      .addCommand(testCommand);
-
-    await parentCommand.parseAsync([
-      'node',
-      'script.js',
-      'test-command',
-      '--count',
-      '42',
-      '--dry-run',
-    ]);
-
-    expect(action).toHaveBeenCalledTimes(1);
-    expect(action).toHaveBeenCalledWith({
-      count: 42,
-      dryRun: true,
-    });
-  });
-
-  test('throws or propagates when inquirer mock rejects (simulated user cancellation)', async () => {
-    expect.hasAssertions();
-
-    const { confirm } = await import('@inquirer/prompts');
-    const confirmMock = vi.mocked(confirm);
-    confirmMock.mockRejectedValueOnce(new Error('User cancelled'));
-
-    const action = vi.fn().mockResolvedValue(undefined);
-
-    const testCommand = createCommand({
-      name: 'test-command',
-      description: 'Test command',
-      options: [DryRunOption],
-      action,
-    });
-
-    const parentCommand = new Command()
-      .name('parent-command')
-      .addCommand(testCommand);
-
-    await expect(
-      parentCommand.parseAsync(['node', 'script.js', 'test-command'])
-    ).rejects.toThrow('User cancelled');
-
-    expect(action).not.toHaveBeenCalled();
-
-    confirmMock.mockResolvedValue(true);
-  });
-
-  test('passes parsed options that satisfy the combined schema type (type-level and runtime)', async () => {
-    expect.hasAssertions();
-
-    let capturedOptions: { env: 'prod' | 'stage'; dryRun: boolean } | undefined;
-
-    const testCommand = createCommand({
-      name: 'test-command',
-      description: 'Test command',
-      options: [EnvOption, DryRunOption],
-      action: (parsedOptions) => {
-        capturedOptions = parsedOptions;
-      },
-    });
-
-    const parentCommand = new Command()
-      .name('parent-command')
-      .addCommand(testCommand);
-
-    await parentCommand.parseAsync([
-      'node',
-      'script.js',
-      'test-command',
-      '--env',
-      'prod',
-    ]);
-
-    expect(capturedOptions).toBeDefined();
-    expect(capturedOptions).toEqual({ env: 'prod', dryRun: true });
-
-    expectTypeOf(capturedOptions!).toEqualTypeOf<{
-      env: 'prod' | 'stage';
-      dryRun: boolean;
-    }>();
-  });
-
-  test('Fails and does not call the given action when given an invalid option from the command line', async () => {
-    expect.hasAssertions();
-
-    const action = vi.fn().mockResolvedValue(undefined);
-
-    const testCommand = createCommand({
-      name: 'test-command',
-      description: 'Test command',
-      options: [EnvOption, DryRunOption],
-      action,
-    });
-
-    const parentCommand = new Command()
-      .name('parent-command')
-      .addCommand(testCommand);
-
-    await expect(
-      parentCommand.parseAsync([
+      await parentCommand.parseAsync([
         'node',
         'script.js',
         'test-command',
         '--env',
-        'invalid',
-      ])
-    ).rejects.toThrow();
-
-    expect(action).not.toHaveBeenCalled();
+        'prod',
+      ]);
+    });
   });
 
-  test('Fails and does not call the given action when given an invalid option from inquirer', async () => {
-    expect.hasAssertions();
-
-    const { select } = await import('@inquirer/prompts');
-    vi.mocked(select).mockResolvedValueOnce('invalid'); // does not match z.enum(["prod", "stage"])
-
-    const action = vi.fn().mockResolvedValue(undefined);
-
-    const testCommand = createCommand({
-      name: 'test-command',
-      description: 'Test command',
-      options: [EnvOption, DryRunOption],
-      action,
-    });
-
-    const parentCommand = new Command()
-      .name('parent-command')
-      .addCommand(testCommand);
-
-    await expect(
-      parentCommand.parseAsync(['node', 'script.js', 'test-command'])
-    ).rejects.toThrow();
-
-    expect(action).not.toHaveBeenCalled();
-  });
-
-  describe('Silent Options', () => {
-    const EnvOptionWithDefaultSilent = ZincOptionCreators.select({
-      name: 'env',
-      flags: '-e, --env [env]',
-      type: 'select',
-      description: 'Environment',
-      schema: z.enum(['prod', 'stage']),
-      default: 'stage',
-      silent: true,
-      choices: [...envChoices],
-    });
-
-    const EnvOptionOptionalSilent = ZincOptionCreators.select({
-      name: 'env',
-      flags: '-e, --env [env]',
-      type: 'select',
-      description: 'Environment',
-      schema: z.enum(['prod', 'stage']),
-      optional: true,
-      silent: true,
-      choices: [...envChoices],
-    });
-
-    test('does not show inquiry when the option is not provided', async () => {
+  describe('Functionality', () => {
+    test('parses CLI options and uses inquirer for missing options, then calls action with parsed options', async () => {
       expect.hasAssertions();
-
-      const { select } = await import('@inquirer/prompts');
-      // If silent were implemented we would not call select; mock so parse succeeds and we can assert select was not called
-      vi.mocked(select).mockResolvedValueOnce('stage');
 
       const action = vi.fn().mockResolvedValue(undefined);
 
       const testCommand = createCommand({
         name: 'test-command',
         description: 'Test command',
-        options: [EnvOptionWithDefaultSilent],
+        options: [EnvOption, DryRunOption, CountOption],
         action,
       });
 
@@ -341,22 +94,72 @@ describe('createCommand', () => {
         .name('parent-command')
         .addCommand(testCommand);
 
-      await parentCommand.parseAsync(['node', 'script.js', 'test-command']);
+      // Pass --env on CLI; omit --dry-run so inquirer (confirm) is used for dryRun.
+      await parentCommand.parseAsync([
+        'node',
+        'script.js',
+        'test-command',
+        '--env',
+        'prod',
+        '--count',
+        '42',
+      ]);
 
-      expect(action).toHaveBeenCalledWith({ env: 'stage' });
-      // Silent option should skip inquirer and use default; currently inquirer is still called
+      expect(action).toHaveBeenCalledTimes(1);
+      expect(action).toHaveBeenCalledWith({
+        env: 'prod',
+        dryRun: true, // from mocked confirm()
+        count: 42, // Verifies coerced number from CLI input
+      });
+    });
+
+    test('does not call inquirer when options are passed on the command line', async () => {
+      expect.hasAssertions();
+
+      const action = vi.fn().mockResolvedValue(undefined);
+
+      const testCommand = createCommand({
+        name: 'test-command',
+        description: 'Test command',
+        options: [EnvOption, DryRunOption],
+        action,
+      });
+
+      const parentCommand = new Command()
+        .name('parent-command')
+        .addCommand(testCommand);
+
+      await parentCommand.parseAsync([
+        'node',
+        'script.js',
+        'test-command',
+        '--env',
+        'stage',
+        '--dry-run',
+      ]);
+
+      expect(action).toHaveBeenCalledTimes(1);
+      expect(action).toHaveBeenCalledWith({
+        env: 'stage',
+        dryRun: true,
+      });
+
+      const { input, confirm, select } = await import('@inquirer/prompts');
+      expect(input).not.toHaveBeenCalled();
+      expect(confirm).not.toHaveBeenCalled();
       expect(select).not.toHaveBeenCalled();
     });
 
-    test('passes the default value to the action when the option is not provided', async () => {
+    test('calls inquirer when option is not provided on the command line', async () => {
       expect.hasAssertions();
 
+      // select() is already mocked to resolve to 'stage' in beforeEach
       const action = vi.fn().mockResolvedValue(undefined);
 
       const testCommand = createCommand({
         name: 'test-command',
         description: 'Test command',
-        options: [EnvOptionWithDefaultSilent],
+        options: [EnvOption, DryRunOption],
         action,
       });
 
@@ -366,18 +169,26 @@ describe('createCommand', () => {
 
       await parentCommand.parseAsync(['node', 'script.js', 'test-command']);
 
-      expect(action).toHaveBeenCalledWith({ env: 'stage' });
+      expect(action).toHaveBeenCalledTimes(1);
+      expect(action).toHaveBeenCalledWith({
+        env: 'stage', // from mocked select()
+        dryRun: true, // from mocked confirm()
+      });
     });
 
-    test('passes undefined to the action when the option is not provided and the CLI option is marked as optional', async () => {
+    test('throws or propagates when inquirer mock rejects (simulated user cancellation)', async () => {
       expect.hasAssertions();
+
+      const { confirm } = await import('@inquirer/prompts');
+      const confirmMock = vi.mocked(confirm);
+      confirmMock.mockRejectedValueOnce(new Error('User cancelled'));
 
       const action = vi.fn().mockResolvedValue(undefined);
 
       const testCommand = createCommand({
         name: 'test-command',
         description: 'Test command',
-        options: [EnvOptionOptionalSilent],
+        options: [DryRunOption],
         action,
       });
 
@@ -385,9 +196,159 @@ describe('createCommand', () => {
         .name('parent-command')
         .addCommand(testCommand);
 
-      await parentCommand.parseAsync(['node', 'script.js', 'test-command']);
+      await expect(
+        parentCommand.parseAsync(['node', 'script.js', 'test-command'])
+      ).rejects.toThrow('User cancelled');
 
-      expect(action).toHaveBeenCalledWith({ env: undefined });
+      expect(action).not.toHaveBeenCalled();
+
+      confirmMock.mockResolvedValue(true);
+    });
+
+    test('fails and does not call the given action when given an invalid option from the command line', async () => {
+      expect.hasAssertions();
+
+      const action = vi.fn().mockResolvedValue(undefined);
+
+      const testCommand = createCommand({
+        name: 'test-command',
+        description: 'Test command',
+        options: [EnvOption, DryRunOption],
+        action,
+      });
+
+      const parentCommand = new Command()
+        .name('parent-command')
+        .addCommand(testCommand);
+
+      await expect(
+        parentCommand.parseAsync([
+          'node',
+          'script.js',
+          'test-command',
+          '--env',
+          'invalid',
+        ])
+      ).rejects.toThrow();
+
+      expect(action).not.toHaveBeenCalled();
+    });
+
+    test('fails and does not call the given action when given an invalid option from inquirer', async () => {
+      expect.hasAssertions();
+
+      const { select } = await import('@inquirer/prompts');
+      vi.mocked(select).mockResolvedValueOnce('invalid'); // does not match z.enum(["prod", "stage"])
+
+      const action = vi.fn().mockResolvedValue(undefined);
+
+      const testCommand = createCommand({
+        name: 'test-command',
+        description: 'Test command',
+        options: [EnvOption, DryRunOption],
+        action,
+      });
+
+      const parentCommand = new Command()
+        .name('parent-command')
+        .addCommand(testCommand);
+
+      await expect(
+        parentCommand.parseAsync(['node', 'script.js', 'test-command'])
+      ).rejects.toThrow();
+
+      expect(action).not.toHaveBeenCalled();
+    });
+
+    describe('Silent Options', () => {
+      const EnvOptionWithDefaultSilent = ZincOptionCreators.select({
+        name: 'env',
+        flags: '-e, --env [env]',
+        description: 'Environment',
+        schema: z.enum(['prod', 'stage']),
+        default: 'stage',
+        silent: true,
+        choices: [...envChoices],
+      });
+
+      const EnvOptionOptionalSilent = ZincOptionCreators.select({
+        name: 'env',
+        flags: '-e, --env [env]',
+        description: 'Environment',
+        schema: z.enum(['prod', 'stage']),
+        optional: true,
+        silent: true,
+        choices: [...envChoices],
+      });
+
+      test('does not show inquiry when the option is not provided', async () => {
+        expect.hasAssertions();
+
+        const { select } = await import('@inquirer/prompts');
+        // If silent were implemented we would not call select; mock so parse succeeds and we can assert select was not called
+        vi.mocked(select).mockResolvedValueOnce('stage');
+
+        const action = vi.fn().mockResolvedValue(undefined);
+
+        const testCommand = createCommand({
+          name: 'test-command',
+          description: 'Test command',
+          options: [EnvOptionWithDefaultSilent],
+          action,
+        });
+
+        const parentCommand = new Command()
+          .name('parent-command')
+          .addCommand(testCommand);
+
+        await parentCommand.parseAsync(['node', 'script.js', 'test-command']);
+
+        expect(action).toHaveBeenCalledWith({ env: 'stage' });
+        // Silent option should skip inquirer and use default; currently inquirer is still called
+        expect(select).not.toHaveBeenCalled();
+      });
+
+      test('passes the default value to the action when the option is not provided', async () => {
+        expect.hasAssertions();
+
+        const action = vi.fn().mockResolvedValue(undefined);
+
+        const testCommand = createCommand({
+          name: 'test-command',
+          description: 'Test command',
+          options: [EnvOptionWithDefaultSilent],
+          action,
+        });
+
+        const parentCommand = new Command()
+          .name('parent-command')
+          .addCommand(testCommand);
+
+        await parentCommand.parseAsync(['node', 'script.js', 'test-command']);
+
+        expect(action).toHaveBeenCalledWith({ env: 'stage' });
+      });
+
+      test('passes undefined to the action when the option is not provided and the CLI option is marked as optional', async () => {
+        expect.hasAssertions();
+
+        const action = vi.fn().mockResolvedValue(undefined);
+
+        const testCommand = createCommand({
+          name: 'test-command',
+          description: 'Test command',
+          options: [EnvOptionOptionalSilent],
+          action,
+        });
+
+        const parentCommand = new Command()
+          .name('parent-command')
+          .addCommand(testCommand);
+
+        await parentCommand.parseAsync(['node', 'script.js', 'test-command']);
+
+        expect(action).toHaveBeenCalledWith({ env: undefined });
+      });
     });
   });
 });

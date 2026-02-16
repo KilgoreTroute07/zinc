@@ -12,7 +12,6 @@ export type SelectOptionCreatorArgs<
   Name extends string,
   Schema extends z.ZodType,
 > = CommonOptionCreatorArgsConstrained<Name, Schema> & {
-  type: 'select';
   choices: InquirerSelectConfig['choices'];
 };
 

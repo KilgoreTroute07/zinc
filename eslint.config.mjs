@@ -28,11 +28,23 @@ export default [
       '@typescript-eslint/brace-style': 'off',
       '@stylistic/brace-style': ['error', '1tbs', { allowSingleLine: false }],
       'no-redeclare': 'off',
-      '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/no-unused-vars': [
         'error',
         { argsIgnorePattern: '^_', ignoreRestSiblings: true },
       ],
+    },
+  },
+  {
+    files: ['**/*.ts', '!**/*.test.ts', '!**/*.spec.ts', '!**/__tests__/**'],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'error',
+    },
+  },
+  {
+    files: ['**/*.test.ts', '**/*.spec.ts', '**/__tests__/**'],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/ban-ts-comment': 'off',
     },
   },
 ];

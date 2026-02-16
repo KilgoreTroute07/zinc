@@ -10,5 +10,6 @@ export default defineConfig({
       // Include normal test files so expectTypeOf/assertType are type-checked
       include: ['src/**/*.{test,spec}.ts'],
     },
+    reporters: [['tree', { summary: false }]],
   },
 });

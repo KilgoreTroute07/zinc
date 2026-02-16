@@ -11,7 +11,7 @@ export type InputOptionCreatorArgs<
   Schema extends z.ZodType,
 > =
   Schema extends NonUndefinedOutput<Schema>
-    ? CommonOptionCreatorArgsConstrained<Name, Schema> & { type: 'input' }
+    ? CommonOptionCreatorArgsConstrained<Name, Schema>
     : never;
 
 export type InputCliOption<

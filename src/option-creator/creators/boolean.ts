@@ -20,7 +20,6 @@ type BooleanOptionParams =
 export type BooleanOptionCreatorArgs<Name extends string> =
   CreateCommandOptionArgs<Name> & {
     inquiry?: string;
-    type: 'boolean';
   } & BooleanOptionParams;
 
 export type BooleanCliOption<Name extends string> = ZincOption<
