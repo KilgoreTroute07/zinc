@@ -1,4 +1,3 @@
-// import js from '@eslint/js';
 import stylistic from '@stylistic/eslint-plugin';
 import tsPlugin from '@typescript-eslint/eslint-plugin';
 import tsParser from '@typescript-eslint/parser';
@@ -6,7 +5,6 @@ import globals from 'globals';
 
 export default [
   { ignores: ['dist/**', 'node_modules/**', '**/*.js', '**/*.mjs'] },
-  // js.configs.recommended,
   {
     files: ['**/*.ts'],
     languageOptions: {
@@ -28,13 +26,13 @@ export default [
       curly: ['error', 'all'],
       'brace-style': 'off',
       '@typescript-eslint/brace-style': 'off',
+      '@stylistic/brace-style': ['error', '1tbs', { allowSingleLine: false }],
       'no-redeclare': 'off',
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/no-unused-vars': [
         'error',
         { argsIgnorePattern: '^_', ignoreRestSiblings: true },
       ],
-      '@stylistic/brace-style': ['error', '1tbs', { allowSingleLine: false }],
     },
   },
 ];
