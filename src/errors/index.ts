@@ -1,5 +1,3 @@
-import { OptionType } from '../option-creator';
-
 export const Logged: unique symbol = Symbol('Logged');
 
 export class ZincError extends Error {
@@ -36,18 +34,5 @@ export class SelectChoiceInvalidError extends ZincError {
       `Select choice value "${choiceValue}" is invalid for option "${optionName}"`
     );
     this.name = 'SelectChoiceInvalidError';
-  }
-}
-
-/**
- * Error thrown when a user tries to generate an option with an unknown type.  It is prevented at
- * the typescript level, but this error is thrown at runtime if the user passes an invalid type.
- */
-export class InvalidOptionTypeError<
-  TObj extends { type: OptionType },
-> extends ZincError {
-  constructor(args: TObj) {
-    super(`Invalid option type: ${args.type}`);
-    this.name = 'InvalidOptionTypeError';
   }
 }

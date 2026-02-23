@@ -5,11 +5,11 @@ import {
   type ParsedOptions,
 } from '../option-creator';
 
-interface CommandCreatorArgs<Options extends ZincOptionArray> {
+interface CommandCreatorArgs<TOptions extends ZincOptionArray> {
   name: string;
   description: string;
-  options: Options;
-  action: (parsedOptions: ParsedOptions<Options>) => void | Promise<void>;
+  options: TOptions;
+  action: (parsedOptions: ParsedOptions<TOptions>) => void | Promise<void>;
 }
 
 export function createCommand<const Options extends ZincOptionArray>(

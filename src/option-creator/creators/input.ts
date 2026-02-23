@@ -1,9 +1,13 @@
 import { input } from '@inquirer/prompts';
 import { z } from 'zod';
 import { InquirerInputConfig } from '../../types/inquirer';
-import { NonUndefinedOutput, NoUndefined } from '../../utils/type-utils';
-import { type CommonOptionCreatorArgsConstrained } from '../types';
-import type { ZincOption } from '../zinc-option';
+import {
+  InferOptional,
+  NonUndefinedOutput,
+  NoUndefined,
+} from '../../utils/type-utils';
+import type { CommonOptionCreatorArgsConstrained, ZincOption } from '../types';
+import { setDefaults } from '../utils';
 import createZincOption from '../zinc-option';
 
 export type InputOptionCreatorArgs<
@@ -33,32 +37,24 @@ export function InputCliOption<Name extends string, Schema extends z.ZodType>(
   Schema,
   typeof args extends { optional: true } ? true : false
 > {
-  const { name, flags, description, schema, inquiry } = args;
+  const { description, inquiry } = args;
   const inputOptions: InquirerInputConfig = {
     message: inquiry || `Enter ${description}`,
   };
 
-  const base = createZincOption({
-    name,
-    flags,
-    description,
-    default: args.default,
-    optional: args.optional,
-    silent: args.silent,
-    schema,
-    inquire: async () => {
-      const result = await input(inputOptions);
-      const trimmedResult = result.trim();
-      return trimmedResult.length > 0 ? trimmedResult : undefined;
-    },
-  } as Parameters<typeof createZincOption>[0]);
+  const standardizedDefinition = setDefaults({
+    ...args,
+    inquire: () => input(inputOptions),
+  });
+
+  const base = createZincOption(standardizedDefinition);
 
   return Object.assign(base, {
     optional(): InputCliOption<Name, Schema, true> {
       return InputCliOption({
         ...args,
         optional: true,
-      } as InputOptionCreatorArgs<Name, Schema>);
+      });
     },
     silent(): InputCliOption<
       Name,
@@ -80,9 +76,5 @@ export function InputCliOption<Name extends string, Schema extends z.ZodType>(
         false
       >;
     },
-  }) as InputCliOption<
-    Name,
-    Schema,
-    typeof args extends { optional: true } ? true : false
-  >;
+  }) as InputCliOption<Name, Schema, InferOptional<typeof args>>;
 }

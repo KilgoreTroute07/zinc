@@ -1,6 +1,6 @@
 import { describe, expect, expectTypeOf, test } from 'vitest';
 import { OptionNameMismatchError } from '../../../errors';
-import { $BrandSymbol } from '../../zinc-option';
+import { $InternalsBrand } from '../../types';
 import { BooleanCliOption } from '../boolean';
 
 describe('Boolean Options', () => {
@@ -185,7 +185,7 @@ describe('Boolean Options', () => {
         default: true,
       });
       const silentOption = option.silent() as any;
-      expect(silentOption[$BrandSymbol]._def.silent).toBe(true);
+      expect(silentOption[$InternalsBrand]._def.silent).toBe(true);
     });
   });
 

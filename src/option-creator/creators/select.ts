@@ -4,8 +4,9 @@ import { SelectChoiceInvalidError } from '../../errors';
 import { InquirerSelectConfig } from '../../types/inquirer';
 import { isObject } from '../../utils/object-utils';
 import { NoUndefined } from '../../utils/type-utils';
-import { type CommonOptionCreatorArgsConstrained } from '../types';
-import createZincOption, { ZincOption } from '../zinc-option';
+import type { CommonOptionCreatorArgsConstrained, ZincOption } from '../types';
+import { setDefaults } from '../utils';
+import createZincOption from '../zinc-option';
 
 /** Select option args. Uses ConstructorArgs so overload resolution works (no NonUndefinedOutput conditional). */
 export type SelectOptionCreatorArgs<
@@ -64,21 +65,24 @@ export function SelectCliOption<Name extends string, Schema extends z.ZodType>(
     selectOptions.default = defaultChoice;
   }
 
-  const base = createZincOption({
-    name,
-    flags,
-    description,
-    default: args.default,
-    optional: args.optional,
-    silent: args.silent,
+  const standardizedDefinition = setDefaults({
+    ...args,
     schema,
     inquire: () => select(selectOptions),
-  } as Parameters<typeof createZincOption>[0]);
+  });
+
+  const base = createZincOption(standardizedDefinition);
 
   return Object.assign(base, {
     optional(): SelectCliOption<Name, Schema, true> {
       return SelectCliOption({
         ...args,
+        name,
+        flags,
+        description,
+        schema,
+        inquiry,
+        choices,
         optional: true,
       } as SelectOptionCreatorArgs<Name, Schema>);
     },
