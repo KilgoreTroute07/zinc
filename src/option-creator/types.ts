@@ -13,14 +13,7 @@ export type OptionParamsWithDefault<Schema extends z.ZodType> = {
   silent?: boolean;
 };
 
-/** Allowed when optional is true: default must be unset; silent allowed. */
-export type OptionParamsWithOptional = {
-  optional: true;
-  default?: undefined;
-  silent?: boolean;
-};
-
-/** No default, not optional: silent not allowed. */
+/** No default, required: silent not allowed. Use .optional() to make optional. */
 export type OptionParamsRequired = {
   default?: undefined;
   optional?: false;
@@ -36,26 +29,18 @@ interface CommonOptionCreatorArgs<
   description: string;
   inquiry?: string;
   schema: Schema;
-  /** When true, .optional() is applied to the schema so undefined parses successfully. Mutually exclusive with default. */
-  optional?: boolean;
   default?: NoUndefined<z.output<Schema>>;
-  /** When true, skip inquirer when default applies. Only allowed when default is set or optional is true. */
+  /** When true, skip inquirer when default applies. Only allowed when default is set. Use .optional().silent() for optional + silent. */
   silent?: boolean;
 }
 
-/** Exclude args that have both default and optional: true (mutually exclusive). */
-type NoDefaultWithOptionalTrue = { default?: undefined } | { optional?: false };
-
-/** CommonOptionCreatorArgs with optional/default/silent mutually constrained. */
+/** CommonOptionCreatorArgs with default/silent constrained. Use .optional() to mark optional. */
 export type CommonOptionCreatorArgsConstrained<
   Name extends string,
   Schema extends z.ZodType,
-> = (
+> =
   | (CommonOptionCreatorArgs<Name, Schema> & OptionParamsWithDefault<Schema>)
-  | (CommonOptionCreatorArgs<Name, Schema> & OptionParamsWithOptional)
-  | (CommonOptionCreatorArgs<Name, Schema> & OptionParamsRequired)
-) &
-  NoDefaultWithOptionalTrue;
+  | (CommonOptionCreatorArgs<Name, Schema> & OptionParamsRequired);
 
 export interface ZincOptionInternalDef<
   TName extends string = string,
@@ -180,6 +165,7 @@ export interface ZincOption<
     TSchema,
     OptionOutput<TSchema, TOptional>
   >;
+  readonly def: ZincOptionInternalDef<TName, TSchema>;
   readonly name: TName;
   readonly commandOption: Option;
   readonly schema: z.ZodType<OptionOutput<TSchema, TOptional>>;
@@ -208,20 +194,6 @@ export type EnvSchemaMap<Options extends ZincOptionArray> = {
     : never;
 };
 
-// CURRENTLY WORKING ON THIS
-// ISSUE WITH CLI INFER NOT PROPERLY INFERRING TYPE OF NON REQUIRED OPTIONS
-export type EnvSchemaMapTemp<Options extends ZincOptionArray> = {
-  [K in keyof Options as Options[K] extends ZincOption<
-    infer OptionName,
-    z.ZodType,
-    boolean
-  >
-    ? OptionName
-    : never]: Options[K] extends ZincOption<string, z.ZodType, boolean>
-    ? CliInfer<Options[K]>
-    : never;
-};
-
 export type EnvironmentSchema<Options extends ZincOptionArray> = z.ZodObject<
   Readonly<EnvSchemaMap<Options>>,
   z.core.$strip
@@ -232,6 +204,21 @@ export type ParsedOptions<Options extends ZincOptionArray> = z.infer<
   EnvironmentSchema<Options>
 >;
 
-// ISSUE WITH CLI INFER NOT PROPERLY INFERRING TYPE OF NON REQUIRED OPTIONS
-export type CliInfer<TOption extends ZincOption<string, z.ZodType, boolean>> =
-  TOption[InternalsBrandType]['output'];
+/**  Inferred output type of a ZincOption  (inspired by/stolen from Zod) */
+export type CliInfer<
+  TOption extends { [$InternalsBrand]: { output: unknown } },
+> = TOption[InternalsBrandType]['output'];
+
+export type MakeOptional<
+  TOption extends ZincOption<string, z.ZodType, boolean>,
+> =
+  TOption extends ZincOption<infer InferredName, infer InferredSchema, boolean>
+    ? TOption & ZincOption<InferredName, InferredSchema, true>
+    : never;
+
+export type AcceptableDefaultValueType<
+  TOption extends ZincOption<string, z.ZodType, boolean>,
+> =
+  TOption extends ZincOption<string, z.ZodType, boolean>
+    ? NoUndefined<z.output<TOption['def']['schema']>>
+    : never;

@@ -7,16 +7,16 @@ import type {
   ZincOption,
   ZincOptionInternalDef,
 } from '../types';
+import { InternalsBrandType } from '../types';
 import { setDefaults } from '../utils';
 import createZincOption from '../zinc-option';
 
 const BooleanSchema = z.stringbool().or(z.boolean());
 export type BooleanSchemaType = typeof BooleanSchema;
 
-/** Boolean options do not support the optional parameter. */
 type BooleanOptionParams =
-  | (OptionParamsWithDefault<BooleanSchemaType> & { optional?: never })
-  | (OptionParamsRequired & { optional?: never });
+  | OptionParamsWithDefault<BooleanSchemaType>
+  | OptionParamsRequired;
 
 type BooleanOptionCreatorArgs<TName extends string> = {
   name: ZincOptionInternalDef<TName>['name'];
@@ -45,11 +45,32 @@ export interface BooleanCliOption<TName extends string> extends ZincOption<
   BooleanSchemaType,
   false
 > {
-  silent(): BooleanCliOption<TName>;
+  silent(): this;
   default(value: boolean): BooleanCliOption<TName>;
 }
 
-export function BooleanCliOption<const TName extends string>(
+function createOption<T extends ZincOption<string, z.ZodType, boolean>>(
+  def: T[InternalsBrandType]['_def']
+) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const instance: any = createZincOption(def);
+
+  instance.silent = () =>
+    createOption({
+      ...def,
+      silent: true,
+    });
+
+  instance.default = (value: boolean) =>
+    createOption({
+      ...def,
+      default: value,
+    });
+
+  return instance;
+}
+
+export function Boolean<const TName extends string>(
   args: BooleanOptionCreatorArgs<TName>
 ): BooleanCliOption<TName> {
   const { description, inquiry } = args;
@@ -65,20 +86,5 @@ export function BooleanCliOption<const TName extends string>(
     optional: false,
   });
 
-  const base = createZincOption(standardizedDefinition);
-
-  return Object.assign(base, {
-    silent(): BooleanCliOption<TName> {
-      return BooleanCliOption({
-        ...args,
-        silent: true,
-      } as BooleanOptionCreatorArgs<TName>);
-    },
-    default(value: boolean): BooleanCliOption<TName> {
-      return BooleanCliOption({
-        ...args,
-        default: value,
-      } as BooleanOptionCreatorArgs<TName>);
-    },
-  }) as BooleanCliOption<TName>;
+  return createOption(standardizedDefinition);
 }

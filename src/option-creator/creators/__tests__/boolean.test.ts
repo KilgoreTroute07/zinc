@@ -1,12 +1,12 @@
 import { describe, expect, expectTypeOf, test } from 'vitest';
 import { OptionNameMismatchError } from '../../../errors';
 import { $InternalsBrand } from '../../types';
-import { BooleanCliOption } from '../boolean';
+import { Boolean } from '../boolean';
 
 describe('Boolean Options', () => {
   describe('type checking', () => {
     test("does not allow 'optional' parameter", () => {
-      BooleanCliOption({
+      Boolean({
         name: 'dryRun',
         flags: '-d, --dry-run',
         description:
@@ -18,7 +18,7 @@ describe('Boolean Options', () => {
     });
 
     test("allows 'silent' parameter when given a default value", () => {
-      BooleanCliOption({
+      Boolean({
         name: 'dryRun',
         flags: '-d, --dry-run',
         description:
@@ -30,7 +30,7 @@ describe('Boolean Options', () => {
 
     test("does not allow 'silent' parameter when not given a default value", () => {
       // @ts-expect-error - silent only allowed when default is set (boolean has no optional)
-      BooleanCliOption({
+      Boolean({
         name: 'dryRun',
         flags: '-d, --dry-run',
         description: 'Dry run',
@@ -41,7 +41,7 @@ describe('Boolean Options', () => {
 
   describe('functionality', () => {
     test('preserves the given option name', () => {
-      const option = BooleanCliOption({
+      const option = Boolean({
         name: 'dryRun',
         flags: '-d, --dry-run',
         description:
@@ -55,7 +55,7 @@ describe('Boolean Options', () => {
 
     test('throws an OptionNameMismatchError if the given name does not match the name from the generated Commander option', () => {
       expect(() => {
-        BooleanCliOption({
+        Boolean({
           name: 'foo',
           flags: '-d, --dry-run',
           description:
@@ -65,7 +65,7 @@ describe('Boolean Options', () => {
       }).toThrow(OptionNameMismatchError);
 
       expect(() => {
-        BooleanCliOption({
+        Boolean({
           name: 'dryRun',
           flags: '--dry-run-foo',
           description:
@@ -76,7 +76,7 @@ describe('Boolean Options', () => {
     });
 
     test("parses 'true' as true and 'false' as false", () => {
-      const option = BooleanCliOption({
+      const option = Boolean({
         name: 'dryRun',
         flags: '-d, --dry-run',
         description:
@@ -89,7 +89,7 @@ describe('Boolean Options', () => {
     });
 
     test("parses '1' as true and '0' as false", () => {
-      const option = BooleanCliOption({
+      const option = Boolean({
         name: 'dryRun',
         flags: '-d, --dry-run',
         description:
@@ -102,7 +102,7 @@ describe('Boolean Options', () => {
     });
 
     test('uses the given default value for parsing when no value is provided', () => {
-      const option = BooleanCliOption({
+      const option = Boolean({
         name: 'dryRun',
         flags: '-d, --dry-run',
         description:
@@ -113,7 +113,7 @@ describe('Boolean Options', () => {
     });
 
     test('generates a registration object with the option name as the key and the schema as the value', () => {
-      const option = BooleanCliOption({
+      const option = Boolean({
         name: 'dryRun',
         flags: '-d, --dry-run',
         description:
@@ -130,7 +130,7 @@ describe('Boolean Options', () => {
     });
 
     test('parses a value of undefined as false when no default value is provided', () => {
-      const option = BooleanCliOption({
+      const option = Boolean({
         name: 'dryRun',
         flags: '-d, --dry-run',
         description: 'Dry run',
@@ -139,7 +139,7 @@ describe('Boolean Options', () => {
     });
 
     test('parses a value of an empty string as false when no default value is provided', () => {
-      const option = BooleanCliOption({
+      const option = Boolean({
         name: 'dryRun',
         flags: '-d, --dry-run',
         description: 'Dry run',
@@ -151,7 +151,7 @@ describe('Boolean Options', () => {
   describe('method chaining', () => {
     describe('optional', () => {
       test('does not exist on boolean options', () => {
-        const option = BooleanCliOption({
+        const option = Boolean({
           name: 'dryRun',
           flags: '-d, --dry-run',
           description:
@@ -165,7 +165,7 @@ describe('Boolean Options', () => {
 
   describe('silent', () => {
     test('returns a new instance', () => {
-      const option = BooleanCliOption({
+      const option = Boolean({
         name: 'dryRun',
         flags: '-d, --dry-run',
         description:
@@ -177,7 +177,7 @@ describe('Boolean Options', () => {
       expect(silentOption.name).toBe('dryRun');
     });
     test('new instance silent property is set to true', () => {
-      const option = BooleanCliOption({
+      const option = Boolean({
         name: 'dryRun',
         flags: '-d, --dry-run',
         description:
@@ -191,7 +191,7 @@ describe('Boolean Options', () => {
 
   describe('default', () => {
     test('returns a new instance', () => {
-      const option = BooleanCliOption({
+      const option = Boolean({
         name: 'dryRun',
         flags: '-d, --dry-run',
         description: 'Dry run',
@@ -202,7 +202,7 @@ describe('Boolean Options', () => {
     });
 
     test('new instance parses undefined as the default value', () => {
-      const option = BooleanCliOption({
+      const option = Boolean({
         name: 'dryRun',
         flags: '-d, --dry-run',
         description: 'Dry run',

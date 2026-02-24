@@ -1,12 +1,12 @@
 import { describe, expect, expectTypeOf, test } from 'vitest';
 import { z } from 'zod';
-import { BooleanCliOption } from '../creators/boolean';
-import { InputCliOption } from '../creators/input';
+import { Boolean } from '../creators/boolean';
+import { Input } from '../creators/input';
 import type { CliInfer, ZincOption } from '../types';
 
 describe('CliInfer', () => {
   test('infers output type from a required string ZincOption', () => {
-    const option = InputCliOption({
+    const option = Input({
       name: 'name',
       flags: '--name',
       description: 'Name',
@@ -16,21 +16,20 @@ describe('CliInfer', () => {
     expectTypeOf<CliInfer<typeof option>>().toEqualTypeOf<string>();
   });
 
-  test.skip('infers output type from an optional string ZincOption', () => {
-    const option = InputCliOption({
+  test('infers output type from an optional string ZincOption', () => {
+    const option = Input({
       name: 'name',
       flags: '--name',
       description: 'Name',
       schema: z.string(),
-      optional: true,
-    });
+    }).optional();
     expect(option.name).toBe('name');
 
     expectTypeOf<CliInfer<typeof option>>().toEqualTypeOf<string | undefined>();
   });
 
   test('infers output type from a boolean ZincOption with default', () => {
-    const option = BooleanCliOption({
+    const option = Boolean({
       name: 'dryRun',
       flags: '-d, --dry-run',
       description: 'Dry run',
@@ -41,7 +40,7 @@ describe('CliInfer', () => {
   });
 
   test('preserves literal name in option type but CliInfer only extracts output', () => {
-    const option = InputCliOption({
+    const option = Input({
       name: 'dryRun',
       flags: '--dry-run',
       description: 'Dry run',

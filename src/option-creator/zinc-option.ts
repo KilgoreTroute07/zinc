@@ -59,11 +59,15 @@ export function createZincOption<
         flags: args.flags,
         description: args.description,
         schema: args.schema,
-        default: args.default ?? null,
-        optional: args.optional ?? false,
-        silent: args.silent ?? false,
+        default: args.default,
+        optional: args.optional,
+        silent: args.silent,
         inquire: args.inquire,
       },
+    },
+
+    get def(): ZincOptionInternalDef<Name, Schema> {
+      return option[$InternalsBrand]._def;
     },
 
     get name(): Name {
@@ -71,32 +75,28 @@ export function createZincOption<
     },
 
     get commandOption(): Option {
-      const d = option[$InternalsBrand]._def;
       return createCommandOption({
-        name: d.name,
-        flags: d.flags,
-        description: d.description,
+        name: option.name,
+        flags: option.def.flags,
+        description: option.def.description,
       });
     },
 
     get schema(): z.ZodType<OptionOutput<Schema, Opt>> {
-      return buildSchema(option[$InternalsBrand]._def);
+      return buildSchema(option.def);
     },
 
     get inquire() {
-      const d = option[$InternalsBrand]._def;
-
-      return d.silent ? async () => d.default ?? undefined : d.inquire;
+      return option.def.silent
+        ? async () => option.def.default ?? undefined
+        : option.def.inquire;
     },
 
     getRegistrationObject(): Record<
       Name,
       z.ZodType<OptionOutput<Schema, Opt>>
     > {
-      const name = (
-        option[$InternalsBrand]._def as ZincOptionInternalDef<Name, Schema>
-      ).name;
-      return { [name]: option.schema } as Record<
+      return { [option.name]: option.schema } as Record<
         Name,
         z.ZodType<OptionOutput<Schema, Opt>>
       >;

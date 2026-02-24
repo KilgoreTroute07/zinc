@@ -2,7 +2,7 @@ import { describe, expect, expectTypeOf, test } from 'vitest';
 import { z } from 'zod';
 import { OptionNameMismatchError } from '../../../errors';
 import { $InternalsBrand } from '../../types';
-import { SelectCliOption } from '../select';
+import { Select } from '../select';
 
 describe('Select Options', () => {
   describe('type checking', () => {
@@ -22,12 +22,12 @@ describe('Select Options', () => {
         ],
       } as const;
 
-      const option = SelectCliOption(selectArgsWithOptionalSchema);
+      const option = Select(selectArgsWithOptionalSchema);
       expect(option.name).toBe('env');
     });
 
-    test("allows 'optional' parameter when not given a default value", () => {
-      SelectCliOption({
+    test("does not allow 'optional' in creator args (use .optional() method instead)", () => {
+      Select({
         name: 'env',
         flags: '-e, --env [environment]',
         description: 'Environment (prod or stage)',
@@ -35,38 +35,18 @@ describe('Select Options', () => {
           .string()
           .toLowerCase()
           .pipe(z.enum(['prod', 'stage'])),
-        default: undefined,
         inquiry: 'Select the environment to use',
         choices: [
           { name: 'stage', value: 'stage' },
           { name: 'prod', value: 'prod' },
         ],
-        optional: true,
-      });
-    });
-
-    test("does not allow 'optional' parameter when given a default value", () => {
-      // @ts-expect-error - optional and default are mutually exclusive
-      SelectCliOption({
-        name: 'env',
-        flags: '-e, --env [environment]',
-        description: 'Environment (prod or stage)',
-        schema: z
-          .string()
-          .toLowerCase()
-          .pipe(z.enum(['prod', 'stage'])),
-        default: 'stage',
-        inquiry: 'Select the environment to use',
-        choices: [
-          { name: 'stage', value: 'stage' },
-          { name: 'prod', value: 'prod' },
-        ],
+        // @ts-expect-error - optional is not a valid creator arg, use .optional() instead
         optional: true,
       });
     });
 
     test("allows 'silent' parameter when given a default value", () => {
-      SelectCliOption({
+      Select({
         name: 'env',
         flags: '-e, --env [environment]',
         description: 'Environment (prod or stage)',
@@ -84,8 +64,8 @@ describe('Select Options', () => {
       });
     });
 
-    test("allows 'silent' parameter when optional parameter is set to true", () => {
-      SelectCliOption({
+    test("allows 'silent' when using .optional().silent() chain", () => {
+      const option = Select({
         name: 'env',
         flags: '-e, --env [environment]',
         description: 'Environment (prod or stage)',
@@ -98,14 +78,15 @@ describe('Select Options', () => {
           { name: 'stage', value: 'stage' },
           { name: 'prod', value: 'prod' },
         ],
-        optional: true,
-        silent: true,
-      });
+      })
+        .optional()
+        .silent();
+      expect(option.name).toBe('env');
     });
 
-    test("does not allow 'silent' parameter when not given a default value and optional parameter is set to false", () => {
-      // @ts-expect-error - silent only allowed when default or optional: true
-      SelectCliOption({
+    test("does not allow 'silent' parameter when not given a default value", () => {
+      // @ts-expect-error - silent only allowed when default is set
+      Select({
         name: 'env',
         flags: '-e, --env [environment]',
         description: 'Environment (prod or stage)',
@@ -113,27 +94,6 @@ describe('Select Options', () => {
           .string()
           .toLowerCase()
           .pipe(z.enum(['prod', 'stage'])),
-        default: undefined,
-        inquiry: 'Select the environment to use',
-        choices: [
-          { name: 'stage', value: 'stage' },
-          { name: 'prod', value: 'prod' },
-        ],
-        optional: false,
-        silent: true,
-      });
-    });
-    test("does not allow 'silent' parameter when not given a default value and optional parameter not set", () => {
-      // @ts-expect-error - silent only allowed when default or optional: true
-      SelectCliOption({
-        name: 'env',
-        flags: '-e, --env [environment]',
-        description: 'Environment (prod or stage)',
-        schema: z
-          .string()
-          .toLowerCase()
-          .pipe(z.enum(['prod', 'stage'])),
-        default: undefined,
         inquiry: 'Select the environment to use',
         choices: [
           { name: 'stage', value: 'stage' },
@@ -146,7 +106,7 @@ describe('Select Options', () => {
 
   describe('functionality', () => {
     test('preserves the given option name', () => {
-      const option = SelectCliOption({
+      const option = Select({
         name: 'env',
         flags: '-e, --env [environment]',
         description: 'Environment (prod or stage)',
@@ -168,7 +128,7 @@ describe('Select Options', () => {
 
     test('throws an OptionNameMismatchError if the given name does not match the name from the generated Commander option', () => {
       expect(() => {
-        SelectCliOption({
+        Select({
           name: 'foo',
           flags: '-e, --env [environment]',
           description: 'Environment (prod or stage)',
@@ -186,7 +146,7 @@ describe('Select Options', () => {
       }).toThrow(OptionNameMismatchError);
 
       expect(() => {
-        SelectCliOption({
+        Select({
           name: 'env',
           flags: '--env-foo [environmentFoo]',
           description: 'Environment (prod or stage)',
@@ -205,7 +165,7 @@ describe('Select Options', () => {
     });
 
     test('preserves the given schema to use for parsing', () => {
-      const option = SelectCliOption({
+      const option = Select({
         name: 'env',
         flags: '-e, --env [environment]',
         description: 'Environment (prod or stage)',
@@ -227,7 +187,7 @@ describe('Select Options', () => {
     });
 
     test('uses the given default value for parsing when no value is provided', () => {
-      const option = SelectCliOption({
+      const option = Select({
         name: 'env',
         flags: '-e, --env [environment]',
         description: 'Environment (prod or stage)',
@@ -246,7 +206,7 @@ describe('Select Options', () => {
     });
 
     test('generates a registration object with the option name as the key and the schema as the value', () => {
-      const option = SelectCliOption({
+      const option = Select({
         name: 'env',
         flags: '-e, --env [environment]',
         description: 'Environment (prod or stage)',
@@ -268,8 +228,8 @@ describe('Select Options', () => {
       expect(reg.env.parse('stage')).toEqual(option.schema.parse('stage'));
     });
 
-    test('safely parses a value of undefined when optional parameter is set to true', () => {
-      const option = SelectCliOption({
+    test('safely parses a value of undefined when option is created with .optional()', () => {
+      const option = Select({
         name: 'env',
         flags: '-e, --env [environment]',
         description: 'Environment (prod or stage)',
@@ -277,38 +237,17 @@ describe('Select Options', () => {
           .string()
           .toLowerCase()
           .pipe(z.enum(['prod', 'stage'])),
-        default: undefined,
         inquiry: 'Select the environment to use',
         choices: [
           { name: 'stage', value: 'stage' },
           { name: 'prod', value: 'prod' },
         ],
-        optional: true,
-      });
+      }).optional();
       expect(option.schema.parse(undefined)).toBe(undefined);
     });
 
-    test('fails to parse a value of undefined when optional parameter is set to false', () => {
-      const option = SelectCliOption({
-        name: 'env',
-        flags: '-e, --env [environment]',
-        description: 'Environment (prod or stage)',
-        schema: z
-          .string()
-          .toLowerCase()
-          .pipe(z.enum(['prod', 'stage'])),
-        inquiry: 'Select the environment to use',
-        choices: [
-          { name: 'stage', value: 'stage' },
-          { name: 'prod', value: 'prod' },
-        ],
-        optional: false,
-      });
-      expect(() => option.schema.parse(undefined)).toThrow();
-    });
-
-    test('fails to parse a value of undefined when optional parameter is not set', () => {
-      const option = SelectCliOption({
+    test('fails to parse a value of undefined when option is required (no .optional())', () => {
+      const option = Select({
         name: 'env',
         flags: '-e, --env [environment]',
         description: 'Environment (prod or stage)',
@@ -325,8 +264,8 @@ describe('Select Options', () => {
       expect(() => option.schema.parse(undefined)).toThrow();
     });
 
-    test('safely parses a value of an empty string as undefined when optional parameter is set to true', () => {
-      const option = SelectCliOption({
+    test('safely parses a value of an empty string as undefined when option is created with .optional()', () => {
+      const option = Select({
         name: 'env',
         flags: '-e, --env [environment]',
         description: 'Environment (prod or stage)',
@@ -334,39 +273,17 @@ describe('Select Options', () => {
           .string()
           .toLowerCase()
           .pipe(z.enum(['prod', 'stage'])),
-        default: undefined,
         inquiry: 'Select the environment to use',
         choices: [
           { name: 'stage', value: 'stage' },
           { name: 'prod', value: 'prod' },
         ],
-        optional: true,
-      });
+      }).optional();
       expect(option.schema.parse('')).toBeUndefined();
     });
 
-    test('fails to parse a value of an empty string when optional parameter is set to false', () => {
-      const option = SelectCliOption({
-        name: 'env',
-        flags: '-e, --env [environment]',
-        description: 'Environment (prod or stage)',
-        schema: z
-          .string()
-          .toLowerCase()
-          .pipe(z.enum(['prod', 'stage'])),
-        default: undefined,
-        inquiry: 'Select the environment to use',
-        choices: [
-          { name: 'stage', value: 'stage' },
-          { name: 'prod', value: 'prod' },
-        ],
-        optional: false,
-      });
-      expect(() => option.schema.parse('')).toThrow();
-    });
-
-    test('fails to parse a value of an empty string when optional parameter is not set', () => {
-      const option = SelectCliOption({
+    test('fails to parse a value of an empty string when option is required (no .optional())', () => {
+      const option = Select({
         name: 'env',
         flags: '-e, --env [environment]',
         description: 'Environment (prod or stage)',
@@ -388,7 +305,7 @@ describe('Select Options', () => {
   describe('method chaining', () => {
     describe('optional', () => {
       test('returns a new instance', () => {
-        const option = SelectCliOption({
+        const option = Select({
           name: 'env',
           flags: '-e, --env [environment]',
           description: 'Environment (prod or stage)',
@@ -408,7 +325,7 @@ describe('Select Options', () => {
         expect(optionalOption.name).toBe('env');
       });
       test('new instance successfully parses undefined and returns original default value when provided', () => {
-        const option = SelectCliOption({
+        const option = Select({
           name: 'env',
           flags: '-e, --env [environment]',
           description: 'Environment (prod or stage)',
@@ -427,7 +344,7 @@ describe('Select Options', () => {
         expect(optionalOption.schema.parse(undefined)).toBe('stage');
       });
       test('new instance successfully parses a value of an empty string and returns original default value when provided', () => {
-        const option = SelectCliOption({
+        const option = Select({
           name: 'env',
           flags: '-e, --env [environment]',
           description: 'Environment (prod or stage)',
@@ -443,7 +360,7 @@ describe('Select Options', () => {
         expect(optionalOption.schema.parse('')).toBe('stage');
       });
       test('new instance successfully parses undefined and returns undefined when no default value was originally provided', () => {
-        const option = SelectCliOption({
+        const option = Select({
           name: 'env',
           flags: '-e, --env [environment]',
           description: 'Environment (prod or stage)',
@@ -461,7 +378,7 @@ describe('Select Options', () => {
         expect(optionalOption.schema.parse(undefined)).toBeUndefined();
       });
       test('new instance successfully parses a value of an empty string and returns undefined when no default value was originally provided', () => {
-        const option = SelectCliOption({
+        const option = Select({
           name: 'env',
           flags: '-e, --env [environment]',
           description: 'Environment (prod or stage)',
@@ -479,7 +396,7 @@ describe('Select Options', () => {
 
     describe('silent', () => {
       test('returns a new instance', () => {
-        const option = SelectCliOption({
+        const option = Select({
           name: 'env',
           flags: '-e, --env [environment]',
           description: 'Environment (prod or stage)',
@@ -499,7 +416,7 @@ describe('Select Options', () => {
         expect(silentOption.name).toBe('env');
       });
       test('new instance silent property is set to true', () => {
-        const option = SelectCliOption({
+        const option = Select({
           name: 'env',
           flags: '-e, --env [environment]',
           description: 'Environment (prod or stage)',
@@ -522,7 +439,7 @@ describe('Select Options', () => {
 
     describe('default', () => {
       test('returns a new instance', () => {
-        const option = SelectCliOption({
+        const option = Select({
           name: 'env',
           flags: '-e, --env [environment]',
           description: 'Environment (prod or stage)',
@@ -542,7 +459,7 @@ describe('Select Options', () => {
       });
 
       test('new instance parses undefined as the default value', () => {
-        const option = SelectCliOption({
+        const option = Select({
           name: 'env',
           flags: '-e, --env [environment]',
           description: 'Environment (prod or stage)',

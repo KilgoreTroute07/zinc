@@ -1,5 +1,5 @@
 /**
- * Tests for command-creator. Uses real option creators (SelectCliOption, etc.)
+ * Tests for command-creator. Uses real option creators (Select, Input, Boolean, etc.)
  * and mocks @inquirer/prompts to control values when options are prompted.
  */
 import { Command } from 'commander';
@@ -276,10 +276,10 @@ describe('createCommand', () => {
         flags: '-e, --env [env]',
         description: 'Environment',
         schema: z.enum(['prod', 'stage']),
-        optional: true,
-        silent: true,
         choices: [...envChoices],
-      });
+      })
+        .optional()
+        .silent();
 
       test('does not show inquiry when the option is not provided', async () => {
         expect.hasAssertions();

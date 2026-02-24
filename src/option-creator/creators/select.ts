@@ -3,10 +3,50 @@ import { z } from 'zod';
 import { SelectChoiceInvalidError } from '../../errors';
 import { InquirerSelectConfig } from '../../types/inquirer';
 import { isObject } from '../../utils/object-utils';
-import { NoUndefined } from '../../utils/type-utils';
-import type { CommonOptionCreatorArgsConstrained, ZincOption } from '../types';
+import {
+  type AcceptableDefaultValueType,
+  type CommonOptionCreatorArgsConstrained,
+  type ZincOption,
+  $InternalsBrand,
+  InternalsBrandType,
+  MakeOptional,
+  OptionOutput,
+  ZincOptionInternals,
+} from '../types';
 import { setDefaults } from '../utils';
 import createZincOption from '../zinc-option';
+
+function createOption<T extends SelectCliOption<string, z.ZodType, boolean>>(
+  def: T[InternalsBrandType]['_def']
+) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const instance: any = createZincOption(def);
+
+  const instanceDefinition = {
+    ...instance[$InternalsBrand]._def,
+    choices: def.choices,
+  } as const satisfies T[InternalsBrandType]['_def'];
+
+  instance.optional = () =>
+    createOption({
+      ...instanceDefinition,
+      optional: true,
+    });
+
+  instance.silent = () =>
+    createOption({
+      ...instanceDefinition,
+      silent: true,
+    });
+
+  instance.default = (value: AcceptableDefaultValueType<T>) =>
+    createOption({
+      ...instanceDefinition,
+      default: value,
+    });
+
+  return instance;
+}
 
 /** Select option args. Uses ConstructorArgs so overload resolution works (no NonUndefinedOutput conditional). */
 export type SelectOptionCreatorArgs<
@@ -16,26 +56,32 @@ export type SelectOptionCreatorArgs<
   choices: InquirerSelectConfig['choices'];
 };
 
-export type SelectCliOption<
-  Name extends string,
-  Schema extends z.ZodType,
-  Optional extends boolean = false,
-> = ZincOption<Name, Schema, Optional> & {
-  optional(): SelectCliOption<Name, Schema, true>;
-  silent(): SelectCliOption<Name, Schema, Optional>;
-  default(
-    value: NoUndefined<z.output<Schema>>
-  ): SelectCliOption<Name, Schema, false>;
-};
+export interface SelectCliOption<
+  TName extends string,
+  TSchema extends z.ZodType,
+  TOptional extends boolean = false,
+> extends ZincOption<TName, TSchema, TOptional> {
+  readonly [$InternalsBrand]: ZincOptionInternals<
+    TName,
+    TSchema,
+    OptionOutput<TSchema, TOptional>
+  > & {
+    _def: {
+      choices: InquirerSelectConfig['choices'];
+    };
+  };
 
-export function SelectCliOption<Name extends string, Schema extends z.ZodType>(
+  optional(): MakeOptional<this>;
+  silent(): this;
+  default(
+    value: AcceptableDefaultValueType<this>
+  ): SelectCliOption<TName, TSchema, false>;
+}
+
+export function Select<Name extends string, Schema extends z.ZodType>(
   args: SelectOptionCreatorArgs<Name, Schema>
-): SelectCliOption<
-  Name,
-  Schema,
-  typeof args extends { optional: true } ? true : false
-> {
-  const { name, flags, description, choices, schema, inquiry } = args;
+): SelectCliOption<Name, Schema, false> {
+  const { name, description, choices, schema, inquiry } = args;
   const selectOptions: InquirerSelectConfig = {
     message: inquiry || `Select ${description}`,
     choices,
@@ -71,43 +117,8 @@ export function SelectCliOption<Name extends string, Schema extends z.ZodType>(
     inquire: () => select(selectOptions),
   });
 
-  const base = createZincOption(standardizedDefinition);
-
-  return Object.assign(base, {
-    optional(): SelectCliOption<Name, Schema, true> {
-      return SelectCliOption({
-        ...args,
-        name,
-        flags,
-        description,
-        schema,
-        inquiry,
-        choices,
-        optional: true,
-      } as SelectOptionCreatorArgs<Name, Schema>);
-    },
-    silent(): SelectCliOption<
-      Name,
-      Schema,
-      typeof args extends { optional: true } ? true : false
-    > {
-      return SelectCliOption({
-        ...args,
-        silent: true,
-      } as SelectOptionCreatorArgs<Name, Schema>);
-    },
-    default(
-      value: NoUndefined<z.output<Schema>>
-    ): SelectCliOption<Name, Schema, false> {
-      const { optional: _o, ...rest } = args;
-      return SelectCliOption({
-        ...rest,
-        default: value,
-      } as SelectOptionCreatorArgs<Name, Schema>);
-    },
-  }) as SelectCliOption<
-    Name,
-    Schema,
-    typeof args extends { optional: true } ? true : false
-  >;
+  return createOption({
+    ...standardizedDefinition,
+    choices,
+  });
 }

@@ -1,14 +1,14 @@
-import { BooleanCliOption } from './creators/boolean';
-import { InputCliOption } from './creators/input';
-import { SelectCliOption } from './creators/select';
+import { Boolean } from './creators/boolean';
+import { Input } from './creators/input';
+import { Select } from './creators/select';
 import type { ZincOption } from './types';
 import { CliInfer, ParsedOptions, ZincOptionArray } from './types';
 import { buildEnvironmentSchemaFromOptions as BuildEnvironmentSchemaFromOptions } from './utils';
 
 const ZincOptionCreators = {
-  input: InputCliOption,
-  boolean: BooleanCliOption,
-  select: SelectCliOption,
+  input: Input,
+  boolean: Boolean,
+  select: Select,
 } as const;
 export default ZincOptionCreators;
 export { BuildEnvironmentSchemaFromOptions, ZincOptionCreators };
